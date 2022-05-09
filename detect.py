@@ -11,6 +11,8 @@ if not cap.isOpened():
     exit(1)
 
 background = get_background(cap)
+if (debug==True):
+    cv.imshow("background",background);
 print("got median")
 
 frame_count = 0
