@@ -2,7 +2,7 @@ import cv2 as cv
 from get_background import get_background
 
 path = "http://live.uci.agh.edu.pl/video/stream1.cgi?start=1543408695"
-
+debug =True
 cap = cv.VideoCapture(path)
 print("captured")
 
@@ -11,7 +11,7 @@ if not cap.isOpened():
     exit(1)
 
 background = get_background(cap)
-
+print("got median")
 
 frame_count = 0
 consecutive_frame = 8
@@ -32,15 +32,24 @@ while (cap.isOpened()):
         orig_frame = frame.copy()
         # IMPORTANT STEP: convert the frame to grayscale first
         gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+        if(debug==True):
+            cv.imshow('phase1', gray)
         if frame_count % consecutive_frame == 0 or frame_count == 1:
             frame_diff_list = []
         # find the difference between current frame and base frame
         frame_diff = cv.absdiff(gray, background)
+        if(debug==True):
+            cv.imshow('phase2', frame_diff);
         # thresholding to convert the frame to binary
         ret, thres = cv.threshold(frame_diff, 50, 255, cv.THRESH_BINARY)
+        if(debug==True):
+            cv.imshow('phase3', thres);
         # dilate the frame a bit to get some more white area...
         # ... makes the detection of contours a bit easier
         dilate_frame = cv.dilate(thres, None, iterations=3)
+        if(debug==True):
+            cv.imshow('phase4', thres);
+
         # append the final result into the `frame_diff_list`
         frame_diff_list.append(thres)
         # if we have reached `consecutive_frame` number of frames
@@ -63,6 +72,7 @@ while (cap.isOpened()):
                 cv.rectangle(orig_frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
             cv.imshow('Detected Objects', orig_frame)
+
             # out.write(orig_frame)
             if cv.waitKey(100) & 0xFF == ord('q'):
                 break
