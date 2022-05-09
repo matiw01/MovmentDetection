@@ -24,6 +24,13 @@ frame_height = int(cap.get(4))
 #     cv.VideoWriter_fourcc(*'mp4v'), 10,
 #     (frame_width, frame_height)
 # )
+mask = (0, 0, 5000, 5000)
+
+
+def in_mask(x1, y1, x2, y2, mask):
+    a, b, c, d = mask
+    return (a <= x1 <= c and b <= y1 <= d) or (a <= x2 <= c and b <= y2 <= d)
+
 
 while (cap.isOpened()):
     ret, frame = cap.read()
@@ -60,7 +67,8 @@ while (cap.isOpened()):
                 # get the xmin, ymin, width, and height coordinates from the contours
                 (x, y, w, h) = cv.boundingRect(contour)
                 # draw the bounding boxes
-                cv.rectangle(orig_frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                if not in_mask(x, y, x+w, y+h, mask):
+                    cv.rectangle(orig_frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
             cv.imshow('Detected Objects', orig_frame)
             # out.write(orig_frame)
