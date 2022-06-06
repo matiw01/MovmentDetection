@@ -1,23 +1,30 @@
 import cv2 as cv
 from get_background import get_background
 
-path = "http://live.uci.agh.edu.pl/video/stream1.cgi?start=1543408695"
+# path = "http://live.uci.agh.edu.pl/video/stream1.cgi?start=1543408695"
+path = "input/video_3.mp4"
+# path = 0
 debug = True
 
 import PySimpleGUI as sg
 
-layout = [[sg.Text(" mask coordinates can be hardcoded in detect.py line - 53: (top left corner is 0,0) ")],[sg.Text("enter your source:"),
-           sg.InputText(default_text="http://live.uci.agh.edu.pl/video/stream1.cgi?start=1543408695")],
-          [sg.Button("Debug"), sg.Button("Normal Run")]
-          #[sg.Text("enter mask coordinates: (top left corner is 0,0):")]
+layout = [[sg.Text(" mask coordinates can be hardcoded in detect.py line - 53: (top left corner is 0,0) ")],
+          [sg.Text("enter your source:"),
+           sg.InputText(default_text=path)],
+          [sg.Text("enter masks coordinates: (top left corner is 0,0):"), sg.InputText(default_text="0,0,100,100,100,100,300,300")],
+          [sg.Text("sensitivity"),
+           sg.InputText(default_text="500")],
+          [sg.Button("Debug"), sg.Button("Normal Run")],
           ]
 
 window = sg.Window(title="Motion detection", layout=layout, margins=(100, 50))
 while True:
     event, values = window.read()
-    path =values[0]
+    path = values[0]
     # End program if user closes window or
     # presses the OK button
+    masks = values[1]
+    sensitivity = int(values[2])
     if event == "Debug":
         debug = True
         break
@@ -27,11 +34,14 @@ while True:
 window.close()
 cap = cv.VideoCapture(path)
 
+masks = masks.split(",")
+mask = list(map(int, masks))
+
 if not cap.isOpened():
     print("Cannot open camera ", path)
     exit(1)
 else:
-    print("opened camera at",path)
+    print("opened camera at", path)
 
 background = get_background(cap)
 if (debug == True):
@@ -50,14 +60,17 @@ frame_height = int(cap.get(4))
 #     (frame_width, frame_height)
 # )
 
-mask = (0, 0, frame_width, int(frame_height / 2))
-
 
 # print(mask[0])
 
 def in_mask(x1, y1, x2, y2, mask):
-    a, b, c, d = mask
-    return (a <= x1 <= c and b <= y1 <= d) or (a <= x2 <= c and b <= y2 <= d)
+    n = len(mask)//4
+    for i in range(n):
+        a, b, c, d = mask[i*4], mask[i*4+1], mask[i*4+2], mask[i*4+3]
+        if (a <= x1 <= c and b <= y1 <= d) or (a <= x2 <= c and b <= y2 <= d):
+            return True
+    return False
+
 
 
 while (cap.isOpened()):
@@ -99,16 +112,19 @@ while (cap.isOpened()):
             for contour in contours:
                 # continue through the loop if contour area is less than 500...
                 # ... helps in removing noise detection
-                if cv.contourArea(contour) < 500:
+                if cv.contourArea(contour) < sensitivity:
                     continue
                 # get the xmin, ymin, width, and height coordinates from the contours
                 (x, y, w, h) = cv.boundingRect(contour)
                 # draw the bounding boxes
                 if not in_mask(x, y, x + w, y + h, mask):
                     cv.rectangle(orig_frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            #print(mask)
-            #print(mask[0])
-            cv.rectangle(orig_frame, (mask[0], mask[1]), (mask[2], mask[3]), (255, 0, 0), 3)
+            # print(mask)
+            # print(mask[0])
+            n = len(mask) // 4
+            for i in range(n):
+                a, b, c, d = mask[i * 4], mask[i * 4 + 1], mask[i * 4 + 2], mask[i * 4 + 3]
+                cv.rectangle(orig_frame, (a, b), (c, d), (255, 0, 0), 3)
             # cv.rectangle(orig_farmask)
             cv.imshow('Detected Objects', orig_frame)
 
