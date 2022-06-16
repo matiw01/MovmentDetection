@@ -2,13 +2,13 @@ Mateusz Więcek
 Nikodem Oleniacz
 Łukasz Zając
 
-##Uruchomienie:Python 3.9
+## Uruchomienie: Python 3.9
 wystarczy uruchomić z interpreterem pythona plik detect.py
 
-##Przycisk Debug uruchomi okienka ponumerowane z których:
+**Przycisk Debug** uruchomi okienka ponumerowane z których:
 background - obraz tła wyłuskany z pierwszych 300 klatek
 
-##kolejne phase mają nałożone efekty wszystkich poprzednich
+kolejne **phase** mają nałożone efekty wszystkich poprzednich
 
 phase1 - skala szarości
 
@@ -18,10 +18,10 @@ phase3 - thresholding
 
 phase4 - dilate
 
-//główne okno wyświetlane również przy opcji Run 
+główne okno wyświetlane również przy opcji **Run** 
 
-
-MASKA
+**MASKA**:
 czerwone obramowanie oznacza maske
-DETEKCJA
+
+**DETEKCJA**:
 zielone obramowanie oznacza detekcje
